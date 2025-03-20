@@ -21,16 +21,16 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.DO_SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/python-droplet
           chmod 600 ~/.ssh/python-droplet
-          
+
           # Start SSH agent properly
           eval $(ssh-agent -s)
 
-          # Use SSH_ASKPASS to provide passphrase automatically
-          echo "#!/bin/bash\necho '${{ secrets.DO_SSH_PASSPHRASE }}'" > /tmp/ssh-askpass
-          chmod +x /tmp/ssh-askpass
-          
+          # Create SSH_ASKPASS script securely
+          echo -e "#!/bin/bash\necho '${{ secrets.DO_SSH_PASSPHRASE }}'" > ~/.ssh/ssh-askpass
+          chmod +x ~/.ssh/ssh-askpass
+
           # Load the SSH key with the passphrase
-          DISPLAY=:0 SSH_ASKPASS=/tmp/ssh-askpass ssh-add ~/.ssh/python-droplet < /dev/null
+          DISPLAY=:0 SSH_ASKPASS=~/.ssh/ssh-askpass ssh-add ~/.ssh/python-droplet < /dev/null
 
           # Ensure SSH config is set
           echo -e "Host *\n  IdentityFile ~/.ssh/python-droplet\n  StrictHostKeyChecking no" > ~/.ssh/config
