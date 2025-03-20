@@ -19,17 +19,18 @@ jobs:
       - name: Set up SSH Key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.DO_SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/python-droplet
-          chmod 600 ~/.ssh/python-droplet
+          echo "${{ secrets.DO_DEPLOY_KEY }}" | tr -d '\r' > ~/.ssh/deploy-key
+          chmod 600 ~/.ssh/deploy-key
       
           # Start SSH agent
           eval $(ssh-agent -s)
       
-          # Add key to the agent without passphrase handling
-          ssh-add ~/.ssh/python-droplet
+          # Add key to the agent
+          ssh-add ~/.ssh/deploy-key
       
           # Ensure SSH config is set
-          echo -e "Host *\n  IdentityFile ~/.ssh/python-droplet\n  StrictHostKeyChecking no" > ~/.ssh/config
+          echo -e "Host *\n  IdentityFile ~/.ssh/deploy-key\n  StrictHostKeyChecking no" > ~/.ssh/config
+      
       - name: Check SSH Keys
         run: ssh-add -L || echo "No SSH keys loaded"
 
@@ -46,7 +47,7 @@ jobs:
 
       - name: SSH into Droplet and Deploy
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/python-droplet root@${{ secrets.DO_DROPLET_IP }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy-key root@${{ secrets.DO_DROPLET_IP }} << 'EOF'
             docker pull ${{ secrets.DOCKER_USERNAME }}/drf-docker-ci-cd:latest
             docker stop drf-docker-ci-cd-container || true
             docker rm drf-docker-ci-cd-container || true
