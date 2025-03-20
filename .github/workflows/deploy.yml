@@ -13,22 +13,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install ssh-agent
-        run: sudo apt-get update && sudo apt-get install -y openssh-client
+      - name: Install required packages
+        run: sudo apt-get update && sudo apt-get install -y openssh-client sshpass
 
-      - name: Set up SSH Key
+      - name: Set up SSH Key with Passphrase
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.DO_SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/python-droplet
           chmod 600 ~/.ssh/python-droplet
+          
+          # Start SSH agent properly
           eval $(ssh-agent -s)
-          echo "${{ secrets.DO_SSH_PASSPHRASE }}" | ssh-add ~/.ssh/python-droplet
-          mkdir -p ~/.ssh && touch ~/.ssh/config
+
+          # Use sshpass to provide the passphrase
+          echo "${{ secrets.DO_SSH_PASSPHRASE }}" | sshpass ssh-add ~/.ssh/python-droplet
+          
+          # Ensure SSH config is set
           echo -e "Host *\n  IdentityFile ~/.ssh/python-droplet\n  StrictHostKeyChecking no" > ~/.ssh/config
 
       - name: Check SSH Keys
         run: ssh-add -L || echo "No SSH keys loaded"
-
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -43,7 +47,7 @@ jobs:
 
       - name: SSH into Droplet and Deploy
         run: |
-          ssh root@${{ secrets.DO_DROPLET_IP }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/python-droplet root@${{ secrets.DO_DROPLET_IP }} << 'EOF'
             docker pull ${{ secrets.DOCKER_USERNAME }}/drf-docker-ci-cd:latest
             docker stop drf-docker-ci-cd-container || true
             docker rm drf-docker-ci-cd-container || true
