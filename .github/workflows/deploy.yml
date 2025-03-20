@@ -26,6 +26,9 @@ jobs:
           mkdir -p ~/.ssh && touch ~/.ssh/config
           echo -e "Host *\n  IdentityFile ~/.ssh/python-droplet\n  StrictHostKeyChecking no" > ~/.ssh/config
 
+      - name: Check SSH Keys
+        run: ssh-add -L || echo "No SSH keys loaded"
+
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
