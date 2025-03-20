@@ -38,7 +38,7 @@ jobs:
 
       - name: SSH into Droplet and Deploy
         run: |
-          ssh -o StrictHostKeyChecking=no root@${{ secrets.DO_DROPLET_IP }} << 'EOF'
+          ssh -i ~/.ssh/python-droplet -o StrictHostKeyChecking=no root@${{ secrets.DO_DROPLET_IP }} << 'EOF'
             docker pull ${{ secrets.DOCKER_USERNAME }}/drf-docker-ci-cd:latest
             docker stop drf-docker-ci-cd-container || true
             docker rm drf-docker-ci-cd-container || true
