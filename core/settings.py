@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-hu*5(v531mj%r3i!4b#(eebo@85y8t)eki(e%qeydz=&r2cc65
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost',os.getenv("DROPLET_IP")]
+ALLOWED_HOSTS = ['localhost',f'${os.getenv("DROPLET_IP")}']
 
 
 # Application definition
