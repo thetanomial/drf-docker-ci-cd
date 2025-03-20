@@ -1,0 +1,41 @@
+name: Deploy Django App to DigitalOcean
+
+on:
+  push:
+    branches:
+      - master  # Runs on push to master branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to DigitalOcean
+        uses: docker/login-action@v3
+        with:
+          registry: registry.digitalocean.com
+          username: ${{ secrets.DO_API_TOKEN }}
+          password: ${{ secrets.DO_API_TOKEN }}
+
+      - name: Build and tag Docker image
+        run: |
+          docker build -t registry.digitalocean.com/my-registry/drf-docker-ci-cd:latest .
+
+      - name: Push Docker image to DigitalOcean Container Registry
+        run: |
+          docker push registry.digitalocean.com/my-registry/drf-docker-ci-cd:latest
+
+      - name: SSH into Droplet and Deploy
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.DO_DROPLET_IP }}
+          username: root
+          key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
+          script: |
+            docker pull registry.digitalocean.com/my-registry/drf-docker-ci-cd:latest
+            docker stop drf-docker-ci-cd-container || true
+            docker rm drf-docker-ci-cd-container || true
+            docker run -d --name drf-docker-ci-cd-container -p 8000:8000 registry.digitalocean.com/my-registry/drf-docker-ci-cd:latest
