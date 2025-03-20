@@ -22,7 +22,7 @@ jobs:
           echo "${{ secrets.DO_SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/python-droplet
           chmod 600 ~/.ssh/python-droplet
           eval $(ssh-agent -s)
-          ssh-add ~/.ssh/python-droplet
+          echo "${{ secrets.DO_SSH_PASSPHRASE }}" | ssh-add ~/.ssh/python-droplet
           mkdir -p ~/.ssh && touch ~/.ssh/config
           echo -e "Host *\n  IdentityFile ~/.ssh/python-droplet\n  StrictHostKeyChecking no" > ~/.ssh/config
 
