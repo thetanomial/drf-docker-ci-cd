@@ -51,7 +51,7 @@ jobs:
             docker pull ${{ secrets.DOCKER_USERNAME }}/drf-docker-ci-cd:latest
             docker stop drf-docker-ci-cd-container || true
             docker rm drf-docker-ci-cd-container || true
-            docker run -d --name drf-docker-ci-cd-container -p 8000:8000 \
+            docker run -d --name drf-docker-ci-cd-container -p 9000:9000 \
               --restart always \
               ${{ secrets.DOCKER_USERNAME }}/drf-docker-ci-cd:latest
             docker image prune -af
