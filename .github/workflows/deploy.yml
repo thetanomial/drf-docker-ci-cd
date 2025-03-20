@@ -16,25 +16,20 @@ jobs:
       - name: Install required packages
         run: sudo apt-get update && sudo apt-get install -y openssh-client
 
-      - name: Set up SSH Key with Passphrase
+      - name: Set up SSH Key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.DO_SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/python-droplet
           chmod 600 ~/.ssh/python-droplet
-
-          # Start SSH agent properly
+      
+          # Start SSH agent
           eval $(ssh-agent -s)
-
-          # Create SSH_ASKPASS script securely
-          echo -e "#!/bin/bash\necho '${{ secrets.DO_SSH_PASSPHRASE }}'" > ~/.ssh/ssh-askpass
-          chmod +x ~/.ssh/ssh-askpass
-
-          # Load the SSH key with the passphrase
-          DISPLAY=:0 SSH_ASKPASS=~/.ssh/ssh-askpass ssh-add ~/.ssh/python-droplet < /dev/null
-
+      
+          # Add key to the agent without passphrase handling
+          ssh-add ~/.ssh/python-droplet
+      
           # Ensure SSH config is set
           echo -e "Host *\n  IdentityFile ~/.ssh/python-droplet\n  StrictHostKeyChecking no" > ~/.ssh/config
-
       - name: Check SSH Keys
         run: ssh-add -L || echo "No SSH keys loaded"
 
